@@ -182,25 +182,52 @@ function M.Animation:set_next_action()
     end
 end
 
--- @function set horizontal movement per frame based on current action
 function M.Animation:set_next_col()
     local width = self.popup.win_config.width
-    if vim.tbl_contains(self.movements.right.normal, self.current_action) then
+    local right = self.movements.right
+    local left = self.movements.left
+
+    local function pick_first(list)
+        if list and #list > 0 then
+            return list[1]
+        end
+        return nil
+    end
+
+    local function switch_to_left()
+        local new = pick_first(left.normal) or pick_first(left.fast) or pick_first(left.slow)
+        if new then
+            self.current_action = new
+        end
+    end
+
+    local function switch_to_right()
+        local new = pick_first(right.normal) or pick_first(right.fast) or pick_first(right.slow)
+        if new then
+            self.current_action = new
+        end
+    end
+
+    -- moving right
+    if vim.tbl_contains(right.normal, self.current_action) then
         if self.col < width - 8 then
             self.col = self.col + 1
         else
-            self.col = M.base_col
+            -- hit right edge → bounce left
+            self.col = width - 8
+            switch_to_left()
         end
-    elseif vim.tbl_contains(self.movements.right.fast, self.current_action) then
+    elseif vim.tbl_contains(right.fast, self.current_action) then
         if self.col < width - 8 then
             self.col = self.col + 2
         else
-            self.col = M.base_col
+            self.col = width - 8
+            switch_to_left()
         end
-    elseif vim.tbl_contains(self.movements.right.slow, self.current_action) then
+    elseif vim.tbl_contains(right.slow, self.current_action) then
         if self.col < width - 8 then
-            if #self.frames[self.current_action] <= 2 then -- if there is only one frame in the current action
-                if self.repetitions % 2 == 0 then -- then use repetitions as a counter
+            if #self.frames[self.current_action] <= 2 then
+                if self.repetitions % 2 == 0 then
                     self.col = self.col + 1
                 end
             else
@@ -209,24 +236,29 @@ function M.Animation:set_next_col()
                 end
             end
         else
-            self.col = M.base_col
+            self.col = width - 8
+            switch_to_left()
         end
-    elseif vim.tbl_contains(self.movements.left.normal, self.current_action) then
+
+    -- moving left
+    elseif vim.tbl_contains(left.normal, self.current_action) then
         if self.col > M.base_col then
             self.col = self.col - 1
         else
-            self.col = width - 8
+            self.col = M.base_col
+            switch_to_right()
         end
-    elseif vim.tbl_contains(self.movements.left.fast, self.current_action) then
+    elseif vim.tbl_contains(left.fast, self.current_action) then
         if self.col > M.base_col then
             self.col = self.col - 2
         else
-            self.col = width - 8
+            self.col = M.base_col
+            switch_to_right()
         end
-    elseif vim.tbl_contains(self.movements.left.slow, self.current_action) then
+    elseif vim.tbl_contains(left.slow, self.current_action) then
         if self.col > M.base_col then
-            if #self.frames[self.current_action] < 2 then -- if there is only one frame in the current action
-                if self.repetitions % 2 == 0 then -- then use repetitions as a counter
+            if #self.frames[self.current_action] < 2 then
+                if self.repetitions % 2 == 0 then
                     self.col = self.col - 1
                 end
             else
@@ -235,7 +267,8 @@ function M.Animation:set_next_col()
                 end
             end
         else
-            self.col = width - 8
+            self.col = M.base_col
+            switch_to_right()
         end
     end
 end

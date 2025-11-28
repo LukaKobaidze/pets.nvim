@@ -13,7 +13,7 @@ M.options = {
     default_style = "brown",
     random = true,
     death_animation = true,
-    popup = { width = "30%", winblend = 100, hl = { Normal = "Normal" }, avoid_statusline = false },
+    popup = { width = "100%", winblend = 100, hl = { Normal = "Normal" }, avoid_statusline = false },
 }
 
 M.pets = {}
