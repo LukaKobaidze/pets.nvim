@@ -38,6 +38,9 @@ function M.setup(options)
         win_options = {
             winblend = M.options.popup.winblend,
         },
+        border = {
+            style = "none",
+        },
     }
     if M.options.popup.avoid_statusline then
         local hl = utils.parse_popup_hl(M.options.popup.hl)
